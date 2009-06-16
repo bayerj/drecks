@@ -32,6 +32,16 @@ class DrecksTest(unittest.TestCase):
     self.assertEqual(recovered2['labels'], ['error', 'network'])
     self.assertEqual(recovered2['message'], 'blablabla2')
 
+  def test_filter(self):
+    logger = drecks.Logger()
+    r = drecks.ListReporter()
+    r.filters.append(lambda l, i, t: 'error' in l)
+    logger.register_reporter(r)
+    logger.log(('error',), message="foo")
+    logger.log(('no-error',), message="foo")
+    self.assertEqual(r.lst[0][0], ('error',))
+
+
   def test_getlogger(self):
     logger1 = drecks.get_logger('one')
     logger2 = drecks.get_logger('one')

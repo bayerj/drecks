@@ -57,25 +57,18 @@ class Logger(object):
       self._reporters.append(reporter)
 
 
-def chain(*reporters):
-  """Chain multiple reporters together. 
+class Reporter(object):
 
-  A reporter can act as a filter by not returning a triple and None instead.
-  None will not be passed further along the chain. 
-  
-  Since the chains are callables themselves, they can be used as any reporter.
-  """
-  def inner(labels, info, timestamp):
-    for r in reporters:
-      new = r(labels, info, timestamp)
-      if new is None:
-        break
-      labels, info, timestamp = new
-    return labels, info, timestamp
-  return inner
+  def __init__(self):
+    self.filters = []
 
+  def __call__(self, labels, info, timestamp):
+    if not all(f(labels, info, timestamp) for f in self.filters):
+      return
+    return self.report(labels, info, timestamp)
+    
 
-class JsonReporter(object):
+class JsonReporter(Reporter):
   """Reporter that logs the information with the usage of json. Every line is
   prefixed be a user defined prefix which (defaults to zero). The log json
   information is also update by the log entries timestamp in the field
@@ -84,8 +77,9 @@ class JsonReporter(object):
   def __init__(self, stream=sys.stdout, prefix='log> '):
     self.stream = stream
     self.prefix = prefix
+    super(JsonReporter, self).__init__()
 
-  def __call__(self, labels, info, timestamp):
+  def report(self, labels, info, timestamp):
     if 'labels' in info or 'timestamp' in info:
       raise ValueError("fieldnames 'timestamp' and 'labels' in info.")
 
@@ -100,3 +94,16 @@ class JsonReporter(object):
     self.stream.write('\n')
 
     return labels, info, timestamp
+
+
+class ListReporter(Reporter):
+  """Reporter that keeps all the log entries in a single list."""
+
+  def __init__(self):
+    self.lst = []
+    super(ListReporter, self).__init__()
+
+  def report(self, labels, info, timestamp):
+    self.lst.append((labels, info, timestamp))
+    return labels, info, timestamp
+
