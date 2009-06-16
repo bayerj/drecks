@@ -39,8 +39,7 @@ class DrecksTest(unittest.TestCase):
     logger.register_reporter(r)
     logger.log(('error',), message="foo")
     logger.log(('no-error',), message="foo")
-    self.assertEqual(r.lst[0][0], ('error',))
-
+    self.assertEqual(r.items[0][0], ('error',))
 
   def test_getlogger(self):
     logger1 = drecks.get_logger('one')

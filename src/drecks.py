@@ -100,10 +100,10 @@ class ListReporter(Reporter):
   """Reporter that keeps all the log entries in a single list."""
 
   def __init__(self):
-    self.lst = []
+    self.items = []
     super(ListReporter, self).__init__()
 
   def report(self, labels, info, timestamp):
-    self.lst.append((labels, info, timestamp))
+    self.items.append((labels, info, timestamp))
     return labels, info, timestamp
 
